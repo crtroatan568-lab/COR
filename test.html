@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Probar consulta de orden Servitotal</title>
+  <style>
+    body { font-family: sans-serif; background: #f3f3f3; padding: 30px; }
+    input, button { padding: 8px 12px; margin: 4px; border-radius: 6px; border: none; }
+    button { background: #7c3aed; color: white; cursor: pointer; }
+    #result { background: #fff; padding: 16px; border-radius: 8px; margin-top: 16px; box-shadow: 0 2px 8px #ccc; }
+    pre { background: #222; color: #eee; padding: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h2>Consulta de Orden Servitotal (Prueba)</h2>
+  <input type="text" id="orderInput" placeholder="Número de orden" value="758873">
+  <button id="consultBtn">Consultar</button>
+  <div id="result"></div>
+
+  <script>
+    const consultBtn = document.getElementById('consultBtn');
+    const orderInput = document.getElementById('orderInput');
+    const resultDiv = document.getElementById('result');
+
+    consultBtn.onclick = async function() {
+      const orderId = orderInput.value.trim();
+      if (!orderId) {
+        resultDiv.innerHTML = '<div style="color:red">Introduce un número de orden</div>';
+        return;
+      }
+      resultDiv.innerHTML = 'Consultando...';
+      try {
+        // Cambia la URL si tu backend está en otro puerto
+        const resp = await fetch(`/api/orden?order_id=${encodeURIComponent(orderId)}`);
+        const data = await resp.json();
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultDiv.innerHTML = `<div style="color:red">Error: ${err}</div>`;
+      }
+    };
+    orderInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') consultBtn.click();
+    });
+  </script>
+</body>
+</html>

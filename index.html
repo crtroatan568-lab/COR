@@ -29,8 +29,6 @@ th{background:#222;}
 <div id="resultArea" style="margin-top:12px"></div>
 
 <script>
-// Cambia aquí a la URL de tu API en Vercel
-const API_URL = "https://tu-proyecto.vercel.app/api/consulta";
 
 const orderInput = document.getElementById("orderInput");
 const consultBtn = document.getElementById("consultBtn");
@@ -41,6 +39,20 @@ const statusEl = document.getElementById("status");
 function setStatus(msg, type="") {
   statusEl.textContent = msg;
   statusEl.style.color = type==="error"?"#ef4444":"#16a34a";
+}
+
+function generarDatosSimulados(orderId) {
+  // Puedes personalizar los datos según el orderId
+  let datos = {
+    "Orden": orderId,
+    "Artículo": orderId === "758873" ? "Refrigerador" : "Lavadora",
+    "Marca": orderId === "758873" ? "LG" : "Samsung",
+    "Modelo": orderId === "758873" ? "GR-1234" : "WA80F5",
+    "Fallas reportadas": orderId === "758873" ? "No enfría" : "No centrifuga",
+    "Fallas encontradas": orderId === "758873" ? "Compresor dañado" : "Motor averiado",
+    "Estado actual": orderId === "758873" ? "En reparación" : "Listo para entrega"
+  };
+  return [datos];
 }
 
 function renderTable(rows) {
@@ -54,24 +66,11 @@ function renderTable(rows) {
   resultArea.innerHTML = "<table>"+thead+tbody+"</table><pre>"+JSON.stringify(rows,null,2)+"</pre>";
 }
 
-async function consultar(orderId){
+function consultar(orderId){
   if(!orderId){ setStatus("Introduce un número de orden", "error"); return;}
-  setStatus("Consultando...");
-  resultArea.innerHTML="";
-  try{
-    const resp = await fetch(`${API_URL}?order_id=${encodeURIComponent(orderId)}`);
-    const data = await resp.json();
-    if(data.error){
-      setStatus(data.error,"error");
-      resultArea.innerHTML= data.details ? "<pre>"+data.details+"</pre>" : "";
-    }else{
-      setStatus("Consulta completada");
-      renderTable(data);
-    }
-  }catch(err){
-    setStatus("Error al consultar","error");
-    resultArea.innerHTML="<pre>"+err+"</pre>";
-  }
+  setStatus("Consulta simulada completada");
+  const datos = generarDatosSimulados(orderId);
+  renderTable(datos);
 }
 
 consultBtn.addEventListener("click",()=>consultar(orderInput.value.trim()));
