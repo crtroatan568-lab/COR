@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta Orden Servitotal</title>
+<style>
+body{font-family:sans-serif;background:#0b0c1b;color:#eee;padding:20px;}
+input,button{padding:8px 12px;margin:4px;border-radius:6px;border:none;}
+button{background:#7c3aed;color:white;cursor:pointer;}
+button.secondary{background:#222;color:#aaa;}
+pre{background:#111;padding:10px;border-radius:6px;overflow:auto;}
+table{border-collapse:collapse;width:100%;margin-top:10px;}
+th,td{border:1px solid #333;padding:6px;}
+th{background:#222;}
+</style>
+</head>
+<body>
+
+<h2>Consulta de Orden - Servitotal</h2>
+
+<div>
+  <input type="text" id="orderInput" placeholder="Número de orden" value="758873">
+  <button id="consultBtn">Consultar</button>
+  <button id="clearBtn" class="secondary">Limpiar</button>
+</div>
+
+<div id="status" style="margin-top:10px"></div>
+<div id="resultArea" style="margin-top:12px"></div>
+
+<script>
+// Cambia aquí a la URL de tu API en Vercel
+const API_URL = "https://tu-proyecto.vercel.app/api/consulta";
+
+const orderInput = document.getElementById("orderInput");
+const consultBtn = document.getElementById("consultBtn");
+const clearBtn = document.getElementById("clearBtn");
+const resultArea = document.getElementById("resultArea");
+const statusEl = document.getElementById("status");
+
+function setStatus(msg, type="") {
+  statusEl.textContent = msg;
+  statusEl.style.color = type==="error"?"#ef4444":"#16a34a";
+}
+
+function renderTable(rows) {
+  if(!rows || rows.length===0){
+    resultArea.innerHTML="<div>No se encontraron datos.</div>";
+    return;
+  }
+  const headers = Object.keys(rows[0]);
+  const thead = "<tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr>";
+  const tbody = rows.map(r=>"<tr>"+headers.map(h=>`<td>${r[h]}</td>`).join("")+"</tr>").join("");
+  resultArea.innerHTML = "<table>"+thead+tbody+"</table><pre>"+JSON.stringify(rows,null,2)+"</pre>";
+}
+
+async function consultar(orderId){
+  if(!orderId){ setStatus("Introduce un número de orden", "error"); return;}
+  setStatus("Consultando...");
+  resultArea.innerHTML="";
+  try{
+    const resp = await fetch(`${API_URL}?order_id=${encodeURIComponent(orderId)}`);
+    const data = await resp.json();
+    if(data.error){
+      setStatus(data.error,"error");
+      resultArea.innerHTML= data.details ? "<pre>"+data.details+"</pre>" : "";
+    }else{
+      setStatus("Consulta completada");
+      renderTable(data);
+    }
+  }catch(err){
+    setStatus("Error al consultar","error");
+    resultArea.innerHTML="<pre>"+err+"</pre>";
+  }
+}
+
+consultBtn.addEventListener("click",()=>consultar(orderInput.value.trim()));
+clearBtn.addEventListener("click",()=>{
+  orderInput.value="";
+  resultArea.innerHTML="";
+  statusEl.textContent="";
+});
+orderInput.addEventListener("keydown",(e)=>{if(e.key==="Enter") consultBtn.click();});
+
+</script>
+
+</body>
+</html>
